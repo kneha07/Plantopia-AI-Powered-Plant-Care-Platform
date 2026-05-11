@@ -1,0 +1,288 @@
+.plant-ai__hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark, #2e7d32) 100%);
+  color: #fff;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.plant-ai__title {
+  font-size: 2.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.plant-ai__subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.plant-ai__tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1.5rem 0 0;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 2rem;
+}
+
+.plant-ai__tab {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+
+.plant-ai__tab--active,
+.plant-ai__tab:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.plant-ai__content {
+  max-width: 680px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.plant-ai__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.plant-ai__upload-area {
+  position: relative;
+}
+
+.plant-ai__upload-label {
+  display: block;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  min-height: 220px;
+}
+
+.plant-ai__upload-label:hover {
+  border-color: var(--color-primary);
+}
+
+.plant-ai__upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  min-height: 220px;
+}
+
+.plant-ai__upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.plant-ai__upload-hint {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.plant-ai__preview {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+}
+
+.plant-ai__file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.plant-ai__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.plant-ai__field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.plant-ai__field textarea,
+.plant-ai__field select {
+  padding: 0.65rem 0.85rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.plant-ai__field textarea:focus,
+.plant-ai__field select:focus {
+  border-color: var(--color-primary);
+}
+
+.plant-ai__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.plant-ai__error {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  background: #fdecea;
+  border-radius: var(--radius-sm);
+}
+
+.plant-ai__result {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.plant-ai__result-name {
+  font-size: 1.75rem;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.plant-ai__result-scientific {
+  font-style: italic;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+}
+
+.plant-ai__result-desc {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.plant-ai__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.plant-ai__badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.plant-ai__badge--outline {
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.plant-ai__tips h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+}
+
+.plant-ai__tips ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.plant-ai__health-status {
+  padding: 0.75rem 1rem;
+  border: 2px solid;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+}
+
+.plant-ai__issue {
+  padding: 1rem;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+}
+
+.plant-ai__issue h3 {
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.plant-ai__issue p {
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.plant-ai__rec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 560px) {
+  .plant-ai__rec-grid { grid-template-columns: 1fr; }
+}
+
+.plant-ai__rec-results {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.plant-ai__rec-card {
+  padding: 1.25rem;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.plant-ai__rec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.plant-ai__rec-header h3 {
+  font-size: 1.15rem;
+  color: var(--color-primary);
+}
+
+.plant-ai__rec-reason {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.plant-ai__rec-tip {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+}

@@ -1,0 +1,194 @@
+const express = require('express');
+const router = express.Router();
+const { query, redisClient } = require('../db');
+const { authenticate } = require('../middleware/auth');
+
+const PLANTS_CACHE_KEY = 'plants:all';
+const CACHE_TTL = 3600; // 1 hour
+
+// GET all plants (public, Redis-cached)
+router.get('/', async (req, res) => {
+  try {
+    if (redisClient.isReady) {
+      const cached = await redisClient.get(PLANTS_CACHE_KEY);
+      if (cached) return res.json(JSON.parse(cached));
+    }
+
+    const { rows } = await query('SELECT * FROM plants ORDER BY name');
+    const plants = rows.map(formatPlant);
+
+    if (redisClient.isReady) {
+      await redisClient.setEx(PLANTS_CACHE_KEY, CACHE_TTL, JSON.stringify(plants));
+    }
+
+    res.json(plants);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to fetch plants' });
+  }
+});
+
+// GET single plant (public)
+router.get('/:id(\\d+)', async (req, res) => {
+  try {
+    const { rows } = await query('SELECT * FROM plants WHERE id = $1', [req.params.id]);
+    if (!rows[0]) return res.status(404).json({ error: 'Plant not found' });
+    res.json(formatPlant(rows[0]));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to fetch plant' });
+  }
+});
+
+// GET user's plant collection (auth required)
+router.get('/collection/all', authenticate, async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT up.id, up.plant_id, up.nickname, up.location, up.acquired_date, up.notes, up.created_at,
+             p.name, p.scientific_name, p.image, p.water, p.difficulty, p.light, p.pet_safe,
+             (SELECT watered_at FROM watering_log WHERE user_plant_id = up.id ORDER BY watered_at DESC LIMIT 1) AS last_watered
+      FROM user_plants up
+      JOIN plants p ON p.id = up.plant_id
+      WHERE up.user_id = $1
+      ORDER BY up.created_at DESC
+    `, [req.user.id]);
+
+    res.json(rows.map(r => ({
+      ...formatPlant(r),
+      userPlantId: r.id,
+      nickname: r.nickname,
+      location: r.location,
+      notes: r.notes,
+      acquiredDate: r.acquired_date,
+      lastWatered: r.last_watered,
+    })));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to fetch collection' });
+  }
+});
+
+// POST add plant to collection (auth required)
+router.post('/collection', authenticate, async (req, res) => {
+  const { plantId, nickname, location, notes, acquiredDate } = req.body;
+  if (!plantId) return res.status(400).json({ error: 'plantId required' });
+
+  try {
+    const { rows } = await query(
+      'INSERT INTO user_plants (user_id, plant_id, nickname, location, notes, acquired_date) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+      [req.user.id, plantId, nickname || null, location || null, notes || null, acquiredDate || null]
+    );
+    res.status(201).json({ id: rows[0].id });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to add plant' });
+  }
+});
+
+// DELETE remove plant from collection (auth required, ownership check)
+router.delete('/collection/:userPlantId', authenticate, async (req, res) => {
+  try {
+    const { rowCount } = await query(
+      'DELETE FROM user_plants WHERE id = $1 AND user_id = $2',
+      [req.params.userPlantId, req.user.id]
+    );
+    if (rowCount === 0) return res.status(404).json({ error: 'Plant not found in your collection' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to remove plant' });
+  }
+});
+
+// POST log watering (auth required, ownership check)
+router.post('/collection/:userPlantId/water', authenticate, async (req, res) => {
+  const { notes } = req.body;
+  try {
+    const { rows: owned } = await query(
+      'SELECT id FROM user_plants WHERE id = $1 AND user_id = $2',
+      [req.params.userPlantId, req.user.id]
+    );
+    if (!owned[0]) return res.status(404).json({ error: 'Plant not found in your collection' });
+
+    const { rows } = await query(
+      'INSERT INTO watering_log (user_plant_id, notes) VALUES ($1,$2) RETURNING id, watered_at',
+      [req.params.userPlantId, notes || null]
+    );
+    res.json({ id: rows[0].id, wateredAt: rows[0].watered_at });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to log watering' });
+  }
+});
+
+// GET watering history for a plant (auth required)
+router.get('/collection/:userPlantId/water', authenticate, async (req, res) => {
+  try {
+    const { rows: owned } = await query(
+      'SELECT id FROM user_plants WHERE id = $1 AND user_id = $2',
+      [req.params.userPlantId, req.user.id]
+    );
+    if (!owned[0]) return res.status(404).json({ error: 'Plant not found in your collection' });
+
+    const { rows } = await query(
+      'SELECT * FROM watering_log WHERE user_plant_id = $1 ORDER BY watered_at DESC LIMIT 30',
+      [req.params.userPlantId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to fetch watering history' });
+  }
+});
+
+// GET plants due for watering (auth required)
+router.get('/schedule/due', authenticate, async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT up.id, up.plant_id, up.nickname, up.location, p.name, p.water, p.image,
+             (SELECT watered_at FROM watering_log WHERE user_plant_id = up.id ORDER BY watered_at DESC LIMIT 1) AS last_watered
+      FROM user_plants up
+      JOIN plants p ON p.id = up.plant_id
+      WHERE up.user_id = $1
+    `, [req.user.id]);
+
+    const waterFrequencyDays = { low: 14, moderate: 7, frequent: 3 };
+    const now = new Date();
+
+    const due = rows.filter(plant => {
+      if (!plant.last_watered) return true;
+      const days = waterFrequencyDays[plant.water] || 7;
+      const diffDays = (now - new Date(plant.last_watered)) / (1000 * 60 * 60 * 24);
+      return diffDays >= days;
+    });
+
+    res.json(due.map(r => ({
+      userPlantId: r.id,
+      plantId: r.plant_id,
+      name: r.nickname || r.name,
+      image: r.image,
+      waterFrequency: r.water,
+      lastWatered: r.last_watered,
+      location: r.location,
+    })));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+});
+
+function formatPlant(row) {
+  return {
+    id: row.plant_id || row.id,
+    name: row.name,
+    scientificName: row.scientific_name,
+    description: row.description,
+    image: row.image,
+    light: row.light,
+    water: row.water,
+    difficulty: row.difficulty,
+    petSafe: row.pet_safe === true || row.pet_safe === 1,
+  };
+}
+
+module.exports = router;

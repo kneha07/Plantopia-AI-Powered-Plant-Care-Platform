@@ -1,0 +1,256 @@
+.my-plants__loading {
+  text-align: center;
+  padding: 4rem;
+  color: var(--color-text-muted);
+}
+
+.my-plants__hero {
+  background: linear-gradient(135deg, #1b5e20 0%, var(--color-primary) 100%);
+  color: #fff;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.my-plants__hero h1 {
+  font-size: 2.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.my-plants__tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1.5rem 0 0;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 2rem;
+}
+
+.my-plants__tab {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s;
+}
+
+.my-plants__tab--active,
+.my-plants__tab:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.my-plants__badge {
+  background: #f44336;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  font-weight: 700;
+}
+
+.my-plants__content {
+  padding-bottom: 3rem;
+}
+
+.my-plants__add-btn {
+  margin-bottom: 1.5rem;
+}
+
+.my-plants__empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-lg);
+}
+
+.my-plants__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.my-plants__card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.my-plants__card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.my-plants__card-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.my-plants__card-body {
+  padding: 1rem;
+}
+
+.my-plants__card-body h3 {
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.my-plants__species,
+.my-plants__location,
+.my-plants__freq,
+.my-plants__last-watered {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.my-plants__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.my-plants__water-btn {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+}
+
+.my-plants__remove-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.my-plants__remove-btn:hover {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+.my-plants__due-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.my-plants__due-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid #2196f3;
+}
+
+.my-plants__due-img {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.my-plants__due-info {
+  flex: 1;
+}
+
+.my-plants__due-info h3 {
+  color: var(--color-primary);
+  margin-bottom: 0.2rem;
+}
+
+.my-plants__due-info p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.my-plants__due-since {
+  color: #f44336 !important;
+}
+
+/* Modal */
+.my-plants__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.my-plants__modal {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+}
+
+.my-plants__modal h2 {
+  color: var(--color-primary);
+  margin-bottom: 1.5rem;
+}
+
+.my-plants__modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.my-plants__modal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.my-plants__modal-form input,
+.my-plants__modal-form select {
+  padding: 0.65rem 0.85rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.my-plants__modal-form input:focus,
+.my-plants__modal-form select:focus {
+  border-color: var(--color-primary);
+}
+
+.my-plants__modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}

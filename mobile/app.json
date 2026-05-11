@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Plantopia",
+    "slug": "plantopia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "plantopia",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#2e7d32"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.plantopia.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Used to identify plants and diagnose plant health",
+        "NSPhotoLibraryUsageDescription": "Used to select plant photos for identification"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2e7d32"
+      },
+      "package": "com.plantopia.app",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera"
+    ]
+  }
+}
