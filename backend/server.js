@@ -132,6 +132,10 @@ setInterval(async () => {
   }
 }, 30 * 60 * 1000);
 
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.originalUrl });
+});
+
 module.exports = { app, server, broadcastWateringAlert };
 
 // Only start the server when this file is run directly (not required by tests)
