@@ -69,7 +69,8 @@ router.get('/collection/all', authenticate, async (req, res) => {
     const { rows } = await query(`
       SELECT up.id, up.plant_id, up.nickname, up.location, up.acquired_date, up.notes, up.created_at,
              p.name, p.scientific_name, p.image, p.water, p.difficulty, p.light, p.pet_safe,
-             (SELECT watered_at FROM watering_log WHERE user_plant_id = up.id ORDER BY watered_at DESC LIMIT 1) AS last_watered
+             (SELECT watered_at FROM watering_log WHERE user_plant_id = up.id ORDER BY watered_at DESC LIMIT 1) AS last_watered,
+             (SELECT COUNT(*) FROM watering_log WHERE user_plant_id = up.id) AS watering_count
       FROM user_plants up
       JOIN plants p ON p.id = up.plant_id
       WHERE up.user_id = $1
@@ -84,6 +85,7 @@ router.get('/collection/all', authenticate, async (req, res) => {
       notes: r.notes,
       acquiredDate: r.acquired_date,
       lastWatered: r.last_watered,
+      wateringCount: parseInt(r.watering_count) || 0,
     })));
   } catch (err) {
     console.error(err.message);
