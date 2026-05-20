@@ -18,7 +18,11 @@ function Header({ currentPage, onNavigate, theme, onToggleTheme, onOpenSettings,
           <span className="logo-text">Plantopia</span>
         </a>
 
-        {greeting && <span className="header-greeting">Hello, {greeting}!</span>}
+        {greeting && (
+          <span className="header-greeting" aria-live="polite">
+            Hello, {greeting}!
+          </span>
+        )}
 
         <div className="header-actions">
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
