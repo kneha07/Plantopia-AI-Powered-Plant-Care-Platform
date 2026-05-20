@@ -6,13 +6,13 @@ const { WATER_FREQUENCY_DAYS, CACHE_KEYS, CACHE_TTL } = require('../constants');
 
 const PLANTS_CACHE_KEY = CACHE_KEYS.ALL_PLANTS;
 
-// GET all plants (public, Redis-cached); supports ?search=term&difficulty=easy|medium|hard&page=1&limit=20
+// GET all plants; supports ?search=term&difficulty=easy|medium|hard&petSafe=true&page=1&limit=20
 router.get('/', async (req, res) => {
-  const { search, difficulty, page, limit } = req.query;
+  const { search, difficulty, petSafe, page, limit } = req.query;
   try {
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(limit) || 100));
-    const isFiltered = search || difficulty || page || limit;
+    const isFiltered = search || difficulty || petSafe !== undefined || page || limit;
     if (!isFiltered && redisClient.isReady) {
       const cached = await redisClient.get(PLANTS_CACHE_KEY);
       if (cached) return res.json(JSON.parse(cached));
@@ -27,6 +27,10 @@ router.get('/', async (req, res) => {
     if (difficulty) {
       params.push(difficulty.toLowerCase());
       sql += ` AND lower(difficulty) = $${params.length}`;
+    }
+    if (petSafe !== undefined) {
+      params.push(petSafe === 'true' || petSafe === '1');
+      sql += ` AND pet_safe = $${params.length}`;
     }
     sql += ' ORDER BY name';
     params.push(pageSize, (pageNum - 1) * pageSize);
