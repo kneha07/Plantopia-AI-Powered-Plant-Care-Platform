@@ -15,6 +15,7 @@ function signTokens(user) {
 router.post('/register', async (req, res) => {
   const { email, password, displayName } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'email and password required' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'invalid email address' });
   if (password.length < 8) return res.status(400).json({ error: 'password must be at least 8 characters' });
 
   try {
