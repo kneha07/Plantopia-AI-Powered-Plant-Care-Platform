@@ -85,6 +85,31 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// POST /api/auth/change-password
+router.post('/change-password', async (req, res) => {
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET);
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'newPassword must be at least 8 characters' });
+    }
+    const { rows } = await query('SELECT password_hash FROM users WHERE id = $1', [payload.id]);
+    if (!rows[0]) return res.status(404).json({ error: 'User not found' });
+    const valid = await bcrypt.compare(currentPassword, rows[0].password_hash);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+    const newHash = await bcrypt.hash(newPassword, 12);
+    await query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, payload.id]);
+    res.json({ success: true });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 // PATCH /api/auth/me — update display name or experience level
 router.patch('/me', async (req, res) => {
   const header = req.headers.authorization;
