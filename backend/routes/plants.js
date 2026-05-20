@@ -97,6 +97,9 @@ router.get('/collection/all', authenticate, async (req, res) => {
 router.post('/collection', authenticate, async (req, res) => {
   const { plantId, nickname, location, notes, acquiredDate } = req.body;
   if (!plantId) return res.status(400).json({ error: 'plantId required' });
+  if (!Number.isInteger(Number(plantId)) || Number(plantId) < 1) {
+    return res.status(400).json({ error: 'plantId must be a positive integer' });
+  }
 
   try {
     const { rows } = await query(
