@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { query, redisClient } = require('../db');
 const { authenticate } = require('../middleware/auth');
+const { WATER_FREQUENCY_DAYS, CACHE_KEYS, CACHE_TTL } = require('../constants');
 
-const PLANTS_CACHE_KEY = 'plants:all';
-const CACHE_TTL = 3600; // 1 hour
+const PLANTS_CACHE_KEY = CACHE_KEYS.ALL_PLANTS;
 
 // GET all plants (public, Redis-cached); supports ?search=term&difficulty=easy|medium|hard&page=1&limit=20
 router.get('/', async (req, res) => {
@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
     const plants = rows.map(formatPlant);
 
     if (!isFiltered && redisClient.isReady) {
-      await redisClient.setEx(PLANTS_CACHE_KEY, CACHE_TTL, JSON.stringify(plants));
+      await redisClient.setEx(PLANTS_CACHE_KEY, CACHE_TTL.PLANTS, JSON.stringify(plants));
     }
 
     res.json({ data: plants, page: pageNum, limit: pageSize });
