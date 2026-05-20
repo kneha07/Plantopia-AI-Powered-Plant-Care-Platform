@@ -22,6 +22,16 @@ app.use(cors({
 }));
 app.use(express.json());
 
+if (process.env.NODE_ENV !== 'test') {
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      console.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    next();
+  });
+}
+
 app.use('/api/auth', authRouter);
 app.use('/api/plants', plantsRouter);
 app.use('/api/ai', aiRouter);
