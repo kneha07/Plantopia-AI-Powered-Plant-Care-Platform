@@ -85,4 +85,29 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// PATCH /api/auth/me — update display name or experience level
+router.patch('/me', async (req, res) => {
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET);
+    const { displayName, experienceLevel } = req.body;
+    const validLevels = ['beginner', 'intermediate', 'expert'];
+    if (experienceLevel && !validLevels.includes(experienceLevel)) {
+      return res.status(400).json({ error: 'experienceLevel must be beginner, intermediate, or expert' });
+    }
+    const { rows } = await query(
+      `UPDATE users SET
+        display_name = COALESCE($1, display_name),
+        experience_level = COALESCE($2, experience_level)
+       WHERE id = $3 RETURNING id, email, display_name, experience_level`,
+      [displayName || null, experienceLevel || null, payload.id]
+    );
+    const u = rows[0];
+    res.json({ id: u.id, email: u.email, displayName: u.display_name, experienceLevel: u.experience_level });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 module.exports = router;
