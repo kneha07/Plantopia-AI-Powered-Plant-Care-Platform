@@ -170,12 +170,11 @@ router.get('/schedule/due', authenticate, async (req, res) => {
       WHERE up.user_id = $1
     `, [req.user.id]);
 
-    const waterFrequencyDays = { low: 14, moderate: 7, frequent: 3 };
     const now = new Date();
 
     const due = rows.filter(plant => {
       if (!plant.last_watered) return true;
-      const days = waterFrequencyDays[plant.water] || 7;
+      const days = WATER_FREQUENCY_DAYS[plant.water] || 7;
       const diffDays = (now - new Date(plant.last_watered)) / (1000 * 60 * 60 * 24);
       return diffDays >= days;
     });
