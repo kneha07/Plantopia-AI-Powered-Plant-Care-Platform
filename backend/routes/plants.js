@@ -169,8 +169,9 @@ router.post('/collection/:userPlantId/water', authenticate, async (req, res) => 
   }
 });
 
-// GET watering history for a plant (auth required)
+// GET watering history for a plant (auth required); supports ?limit=N (default 30, max 100)
 router.get('/collection/:userPlantId/water', authenticate, async (req, res) => {
+  const histLimit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 30));
   try {
     const { rows: owned } = await query(
       'SELECT id FROM user_plants WHERE id = $1 AND user_id = $2',
@@ -179,8 +180,8 @@ router.get('/collection/:userPlantId/water', authenticate, async (req, res) => {
     if (!owned[0]) return res.status(404).json({ error: 'Plant not found in your collection' });
 
     const { rows } = await query(
-      'SELECT * FROM watering_log WHERE user_plant_id = $1 ORDER BY watered_at DESC LIMIT 30',
-      [req.params.userPlantId]
+      'SELECT * FROM watering_log WHERE user_plant_id = $1 ORDER BY watered_at DESC LIMIT $2',
+      [req.params.userPlantId, histLimit]
     );
     res.json(rows);
   } catch (err) {
