@@ -22,11 +22,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.use((req, res, next) => {
+  const requestId = req.headers['x-request-id'] || `req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  res.setHeader('X-Request-ID', requestId);
+  req.requestId = requestId;
+  next();
+});
+
 if (process.env.NODE_ENV !== 'test') {
   app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
-      console.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms`);
+      console.log(`[${req.requestId}] ${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms`);
     });
     next();
   });
