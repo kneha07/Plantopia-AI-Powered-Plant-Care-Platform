@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { query, redisClient } = require('../db');
 const { authenticate } = require('../middleware/auth');
-const { WATER_FREQUENCY_DAYS, CACHE_KEYS, CACHE_TTL } = require('../constants');
+const { CACHE_KEYS, CACHE_TTL } = require('../constants');
+const { isWateringDue, formatUserPlant } = require('../utils');
 
 const PLANTS_CACHE_KEY = CACHE_KEYS.ALL_PLANTS;
 
@@ -194,24 +195,7 @@ router.get('/schedule/due', authenticate, async (req, res) => {
       WHERE up.user_id = $1
     `, [req.user.id]);
 
-    const now = new Date();
-
-    const due = rows.filter(plant => {
-      if (!plant.last_watered) return true;
-      const days = WATER_FREQUENCY_DAYS[plant.water] || 7;
-      const diffDays = (now - new Date(plant.last_watered)) / (1000 * 60 * 60 * 24);
-      return diffDays >= days;
-    });
-
-    res.json(due.map(r => ({
-      userPlantId: r.id,
-      plantId: r.plant_id,
-      name: r.nickname || r.name,
-      image: r.image,
-      waterFrequency: r.water,
-      lastWatered: r.last_watered,
-      location: r.location,
-    })));
+    res.json(rows.filter(isWateringDue).map(formatUserPlant));
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Failed to fetch schedule' });
