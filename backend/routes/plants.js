@@ -6,11 +6,13 @@ const { authenticate } = require('../middleware/auth');
 const PLANTS_CACHE_KEY = 'plants:all';
 const CACHE_TTL = 3600; // 1 hour
 
-// GET all plants (public, Redis-cached); supports ?search=term&difficulty=easy|medium|hard
+// GET all plants (public, Redis-cached); supports ?search=term&difficulty=easy|medium|hard&page=1&limit=20
 router.get('/', async (req, res) => {
-  const { search, difficulty } = req.query;
+  const { search, difficulty, page, limit } = req.query;
   try {
-    const isFiltered = search || difficulty;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(limit) || 100));
+    const isFiltered = search || difficulty || page || limit;
     if (!isFiltered && redisClient.isReady) {
       const cached = await redisClient.get(PLANTS_CACHE_KEY);
       if (cached) return res.json(JSON.parse(cached));
@@ -27,6 +29,8 @@ router.get('/', async (req, res) => {
       sql += ` AND lower(difficulty) = $${params.length}`;
     }
     sql += ' ORDER BY name';
+    params.push(pageSize, (pageNum - 1) * pageSize);
+    sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
     const { rows } = await query(sql, params);
     const plants = rows.map(formatPlant);
@@ -35,7 +39,7 @@ router.get('/', async (req, res) => {
       await redisClient.setEx(PLANTS_CACHE_KEY, CACHE_TTL, JSON.stringify(plants));
     }
 
-    res.json(plants);
+    res.json({ data: plants, page: pageNum, limit: pageSize });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Failed to fetch plants' });
