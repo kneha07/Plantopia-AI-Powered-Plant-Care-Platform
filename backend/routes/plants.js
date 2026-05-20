@@ -104,7 +104,7 @@ router.post('/collection', authenticate, async (req, res) => {
   try {
     const { rows } = await query(
       'INSERT INTO user_plants (user_id, plant_id, nickname, location, notes, acquired_date) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-      [req.user.id, plantId, nickname || null, location || null, notes || null, acquiredDate || null]
+      [req.user.id, plantId, nickname || null, location || null, notes || null, acquiredDate || new Date().toISOString().split('T')[0]]
     );
     res.status(201).json({ id: rows[0].id });
   } catch (err) {
