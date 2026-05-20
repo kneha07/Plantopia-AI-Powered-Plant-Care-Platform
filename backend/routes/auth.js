@@ -55,15 +55,16 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// POST /api/auth/refresh
+// POST /api/auth/refresh — rotates both tokens on each use
 router.post('/refresh', (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken) return res.status(400).json({ error: 'refreshToken required' });
 
   try {
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const accessToken = jwt.sign({ id: payload.id, email: payload.email }, process.env.JWT_SECRET, { expiresIn: '15m' });
-    res.json({ accessToken });
+    const user = { id: payload.id, email: payload.email };
+    const { accessToken, refreshToken: newRefreshToken } = signTokens(user);
+    res.json({ accessToken, refreshToken: newRefreshToken });
   } catch {
     res.status(401).json({ error: 'Invalid or expired refresh token' });
   }
