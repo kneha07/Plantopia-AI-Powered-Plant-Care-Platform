@@ -6,18 +6,29 @@ const { authenticate } = require('../middleware/auth');
 const PLANTS_CACHE_KEY = 'plants:all';
 const CACHE_TTL = 3600; // 1 hour
 
-// GET all plants (public, Redis-cached)
+// GET all plants (public, Redis-cached); supports ?search=term
 router.get('/', async (req, res) => {
+  const { search } = req.query;
   try {
-    if (redisClient.isReady) {
+    if (!search && redisClient.isReady) {
       const cached = await redisClient.get(PLANTS_CACHE_KEY);
       if (cached) return res.json(JSON.parse(cached));
     }
 
-    const { rows } = await query('SELECT * FROM plants ORDER BY name');
+    let rows;
+    if (search) {
+      const term = `%${search.toLowerCase()}%`;
+      ({ rows } = await query(
+        'SELECT * FROM plants WHERE lower(name) LIKE $1 OR lower(scientific_name) LIKE $1 ORDER BY name',
+        [term]
+      ));
+    } else {
+      ({ rows } = await query('SELECT * FROM plants ORDER BY name'));
+    }
+
     const plants = rows.map(formatPlant);
 
-    if (redisClient.isReady) {
+    if (!search && redisClient.isReady) {
       await redisClient.setEx(PLANTS_CACHE_KEY, CACHE_TTL, JSON.stringify(plants));
     }
 
