@@ -103,6 +103,26 @@ router.post('/collection', authenticate, async (req, res) => {
   }
 });
 
+// PATCH update plant collection entry (nickname, location, notes)
+router.patch('/collection/:userPlantId', authenticate, async (req, res) => {
+  const { nickname, location, notes } = req.body;
+  try {
+    const { rows } = await query(
+      `UPDATE user_plants SET
+        nickname = COALESCE($1, nickname),
+        location = COALESCE($2, location),
+        notes = COALESCE($3, notes)
+       WHERE id = $4 AND user_id = $5 RETURNING id`,
+      [nickname ?? null, location ?? null, notes ?? null, req.params.userPlantId, req.user.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Plant not found in your collection' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to update plant' });
+  }
+});
+
 // DELETE remove plant from collection (auth required, ownership check)
 router.delete('/collection/:userPlantId', authenticate, async (req, res) => {
   try {
