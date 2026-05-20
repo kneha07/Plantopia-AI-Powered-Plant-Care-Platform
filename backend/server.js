@@ -26,7 +26,13 @@ app.use('/api/auth', authRouter);
 app.use('/api/plants', plantsRouter);
 app.use('/api/ai', aiRouter);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+const SERVER_START = Date.now();
+app.get('/api/health', (req, res) => res.json({
+  status: 'ok',
+  time: new Date().toISOString(),
+  uptime: Math.floor((Date.now() - SERVER_START) / 1000),
+  version: process.env.npm_package_version || '1.0.0',
+}));
 
 app.get('/', (req, res) => {
   res.send(`
