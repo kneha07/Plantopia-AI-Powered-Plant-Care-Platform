@@ -6,29 +6,32 @@ const { authenticate } = require('../middleware/auth');
 const PLANTS_CACHE_KEY = 'plants:all';
 const CACHE_TTL = 3600; // 1 hour
 
-// GET all plants (public, Redis-cached); supports ?search=term
+// GET all plants (public, Redis-cached); supports ?search=term&difficulty=easy|medium|hard
 router.get('/', async (req, res) => {
-  const { search } = req.query;
+  const { search, difficulty } = req.query;
   try {
-    if (!search && redisClient.isReady) {
+    const isFiltered = search || difficulty;
+    if (!isFiltered && redisClient.isReady) {
       const cached = await redisClient.get(PLANTS_CACHE_KEY);
       if (cached) return res.json(JSON.parse(cached));
     }
 
-    let rows;
+    let sql = 'SELECT * FROM plants WHERE 1=1';
+    const params = [];
     if (search) {
-      const term = `%${search.toLowerCase()}%`;
-      ({ rows } = await query(
-        'SELECT * FROM plants WHERE lower(name) LIKE $1 OR lower(scientific_name) LIKE $1 ORDER BY name',
-        [term]
-      ));
-    } else {
-      ({ rows } = await query('SELECT * FROM plants ORDER BY name'));
+      params.push(`%${search.toLowerCase()}%`);
+      sql += ` AND (lower(name) LIKE $${params.length} OR lower(scientific_name) LIKE $${params.length})`;
     }
+    if (difficulty) {
+      params.push(difficulty.toLowerCase());
+      sql += ` AND lower(difficulty) = $${params.length}`;
+    }
+    sql += ' ORDER BY name';
 
+    const { rows } = await query(sql, params);
     const plants = rows.map(formatPlant);
 
-    if (!search && redisClient.isReady) {
+    if (!isFiltered && redisClient.isReady) {
       await redisClient.setEx(PLANTS_CACHE_KEY, CACHE_TTL, JSON.stringify(plants));
     }
 
